@@ -1,14 +1,44 @@
 defmodule SlopcaseWeb.ShowcaseLive do
   use SlopcaseWeb, :live_view
 
+  alias Slopcase.Showcase
+  alias Slopcase.Showcase.Submission
+
   def mount(_params, _session, socket) do
-    form = to_form(%{}, as: :submission)
+    submissions = Showcase.list_submissions()
+    form =
+      %Submission{}
+      |> Showcase.change_submission()
+      |> to_form()
 
     {:ok,
      socket
      |> assign(:page_title, "Slopcase Showcase")
      |> assign(:form, form)
-     |> stream(:submissions, [])}
+     |> stream(:submissions, submissions)}
+  end
+
+  def handle_event("validate", %{"submission" => submission_params}, socket) do
+    changeset =
+      %Submission{}
+      |> Showcase.change_submission(submission_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, form: to_form(changeset))}
+  end
+
+  def handle_event("save", %{"submission" => submission_params}, socket) do
+    case Showcase.create_submission(submission_params) do
+      {:ok, submission} ->
+        {:noreply,
+         socket
+         |> stream_insert(:submissions, submission, at: 0)
+         |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
+         |> put_flash(:info, "Slop logged. The vibes are immaculate.")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset))}
+    end
   end
 
   def render(assigns) do
@@ -47,6 +77,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
                     id="submission_slop_true"
                     name={@form[:slop].name}
                     value="true"
+                    checked={@form[:slop].value in [true, "true"]}
                     required
                   />
                   Slop
@@ -57,6 +88,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
                     id="submission_slop_false"
                     name={@form[:slop].name}
                     value="false"
+                    checked={@form[:slop].value in [false, "false"]}
                     required
                   />
                   Not slop
@@ -90,13 +122,47 @@ defmodule SlopcaseWeb.ShowcaseLive do
           <div :for={{id, submission} <- @streams.submissions} id={id} class="submission-card">
             <div class="submission-card__header">
               <span class="submission-title">{submission.title}</span>
-              <span class="submission-pill">Slop</span>
+              <span class={slop_badge_class(submission.slop)}>{slop_label(submission.slop)}</span>
             </div>
-            <p class="submission-meta">Details will appear once submissions roll in.</p>
+            <div class="submission-card__links">
+              <a
+                :if={submission.app_url}
+                class="submission-link"
+                href={submission.app_url}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                App
+              </a>
+              <a
+                :if={submission.repo_url}
+                class="submission-link"
+                href={submission.repo_url}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Repo
+              </a>
+            </div>
+            <div class="submission-meta">
+              <span :if={submission.model} class="submission-detail">
+                Model: {submission.model}
+              </span>
+              <span :if={submission.tools} class="submission-detail">
+                Tools: {submission.tools}
+              </span>
+            </div>
+            <p :if={submission.notes} class="submission-notes">{submission.notes}</p>
           </div>
         </div>
       </section>
     </Layouts.app>
     """
   end
+
+  defp slop_label(true), do: "Slop"
+  defp slop_label(false), do: "Not slop"
+
+  defp slop_badge_class(true), do: ["submission-pill", "submission-pill--slop"]
+  defp slop_badge_class(false), do: ["submission-pill", "submission-pill--clean"]
 end
