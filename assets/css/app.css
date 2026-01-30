@@ -271,6 +271,7 @@ select:focus-visible {
   inset: 0;
   background: var(--hero-glow);
   opacity: 0.6;
+  pointer-events: none;
 }
 
 .showcase-hero::after {
@@ -280,6 +281,7 @@ select:focus-visible {
   background-image: var(--noise-2);
   opacity: 0.15;
   mix-blend-mode: soft-light;
+  pointer-events: none;
 }
 
 .showcase-hero__inner {
