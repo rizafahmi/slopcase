@@ -376,10 +376,10 @@ defmodule SlopcaseWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <ul class="list">
-      <li :for={item <- @item} class="list-row">
-        <div class="list-col-grow">
-          <div class="font-bold">{item.title}</div>
+    <ul class="data-list">
+      <li :for={item <- @item} class="data-list__item">
+        <div class="data-list__col">
+          <div class="data-list__title">{item.title}</div>
           <div>{render_slot(item)}</div>
         </div>
       </li>
@@ -420,10 +420,7 @@ defmodule SlopcaseWeb.CoreComponents do
     JS.show(js,
       to: selector,
       time: 300,
-      transition:
-        {"transition-all ease-out duration-300",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95",
-         "opacity-100 translate-y-0 sm:scale-100"}
+      transition: {"transition-base", "opacity-0 translate-y-4", "opacity-100 translate-y-0"}
     )
   end
 
@@ -431,9 +428,7 @@ defmodule SlopcaseWeb.CoreComponents do
     JS.hide(js,
       to: selector,
       time: 200,
-      transition:
-        {"transition-all ease-in duration-200", "opacity-100 translate-y-0 sm:scale-100",
-         "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"}
+      transition: {"transition-base", "opacity-100 translate-y-0", "opacity-0 translate-y-4"}
     )
   end
 
