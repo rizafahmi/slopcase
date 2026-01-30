@@ -17,7 +17,7 @@ defmodule SlopcaseWeb.Router do
   scope "/", SlopcaseWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", ShowcaseLive, :index
   end
 
   # Other scopes may use custom stacks.
