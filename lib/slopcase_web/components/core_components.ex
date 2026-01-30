@@ -8,16 +8,11 @@ defmodule SlopcaseWeb.CoreComponents do
   with doc strings and declarative assigns. You may customize and style
   them in any way you want, based on your application growth and needs.
 
-  The foundation for styling is Tailwind CSS, a utility-first CSS framework,
-  augmented with daisyUI, a Tailwind CSS plugin that provides UI components
-  and themes. Here are useful references:
+  The foundation for styling is Open Props design tokens combined with
+  bespoke CSS components. Tailwind remains in the build pipeline, but
+  the UI here is driven by Open Props variables and custom classes.
 
-    * [daisyUI](https://daisyui.com/docs/intro/) - a good place to get
-      started and see the available components.
-
-    * [Tailwind CSS](https://tailwindcss.com) - the foundational framework
-      we build on. You will use it for layout, sizing, flexbox, grid, and
-      spacing.
+    * [Open Props](https://open-props.style) - design tokens used throughout.
 
     * [Heroicons](https://heroicons.com) - see `icon/1` for usage.
 
@@ -55,23 +50,22 @@ defmodule SlopcaseWeb.CoreComponents do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
-      class="toast toast-top toast-end z-50"
+      class="flash-slot"
       {@rest}
     >
       <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
-        @kind == :error && "alert-error"
+        "flash-card",
+        @kind == :info && "flash-card--info",
+        @kind == :error && "flash-card--error"
       ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
-        <div>
-          <p :if={@title} class="font-semibold">{@title}</p>
-          <p>{msg}</p>
+        <.icon :if={@kind == :info} name="hero-information-circle" class="icon icon--lg" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="icon icon--lg" />
+        <div class="flash-body">
+          <p :if={@title} class="flash-title">{@title}</p>
+          <p class="flash-message">{msg}</p>
         </div>
-        <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label="close">
-          <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
+        <button type="button" class="flash-close" aria-label="close">
+          <.icon name="hero-x-mark" class="icon icon--sm" />
         </button>
       </div>
     </div>
@@ -93,11 +87,11 @@ defmodule SlopcaseWeb.CoreComponents do
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
+    variants = %{"primary" => "btn btn--primary", nil => "btn btn--ghost"}
 
     assigns =
       assign_new(assigns, :class, fn ->
-        ["btn", Map.fetch!(variants, assigns[:variant])]
+        Map.fetch!(variants, assigns[:variant])
       end)
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
@@ -184,20 +178,19 @@ defmodule SlopcaseWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="fieldset mb-2">
-      <label>
+    <div class="form-field form-field--checkbox">
+      <label class="form-checkbox">
         <input type="hidden" name={@name} value="false" disabled={@rest[:disabled]} />
-        <span class="label">
-          <input
-            type="checkbox"
-            id={@id}
-            name={@name}
-            value="true"
-            checked={@checked}
-            class={@class || "checkbox checkbox-sm"}
-            {@rest}
-          />{@label}
-        </span>
+        <input
+          type="checkbox"
+          id={@id}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class={@class || "form-checkbox__input"}
+          {@rest}
+        />
+        <span class="form-checkbox__label">{@label}</span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -206,13 +199,16 @@ defmodule SlopcaseWeb.CoreComponents do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+    <div class="form-field">
+      <label class="form-label">
+        <span :if={@label} class="form-label__text">{@label}</span>
         <select
           id={@id}
           name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
+          class={[
+            @class || "form-input form-input--select",
+            @errors != [] && (@error_class || "form-input--error")
+          ]}
           multiple={@multiple}
           {@rest}
         >
@@ -227,15 +223,15 @@ defmodule SlopcaseWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+    <div class="form-field">
+      <label class="form-label">
+        <span :if={@label} class="form-label__text">{@label}</span>
         <textarea
           id={@id}
           name={@name}
           class={[
-            @class || "w-full textarea",
-            @errors != [] && (@error_class || "textarea-error")
+            @class || "form-input form-input--textarea",
+            @errors != [] && (@error_class || "form-input--error")
           ]}
           {@rest}
         >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
@@ -248,17 +244,17 @@ defmodule SlopcaseWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label>
-        <span :if={@label} class="label mb-1">{@label}</span>
+    <div class="form-field">
+      <label class="form-label">
+        <span :if={@label} class="form-label__text">{@label}</span>
         <input
           type={@type}
           name={@name}
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
+            @class || "form-input",
+            @errors != [] && (@error_class || "form-input--error")
           ]}
           {@rest}
         />
@@ -271,8 +267,8 @@ defmodule SlopcaseWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
-      <.icon name="hero-exclamation-circle" class="size-5" />
+    <p class="form-error">
+      <.icon name="hero-exclamation-circle" class="icon icon--sm" />
       {render_slot(@inner_block)}
     </p>
     """
@@ -287,16 +283,16 @@ defmodule SlopcaseWeb.CoreComponents do
 
   def header(assigns) do
     ~H"""
-    <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
-      <div>
-        <h1 class="text-lg font-semibold leading-8">
+    <header class={["component-header", @actions != [] && "component-header--with-actions"]}>
+      <div class="component-header__content">
+        <h1 class="component-title">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
+        <p :if={@subtitle != []} class="component-subtitle">
           {render_slot(@subtitle)}
         </p>
       </div>
-      <div class="flex-none">{render_slot(@actions)}</div>
+      <div class="component-actions">{render_slot(@actions)}</div>
     </header>
     """
   end
@@ -333,7 +329,7 @@ defmodule SlopcaseWeb.CoreComponents do
       end
 
     ~H"""
-    <table class="table table-zebra">
+    <table class="data-table">
       <thead>
         <tr>
           <th :for={col <- @col}>{col[:label]}</th>
@@ -347,12 +343,12 @@ defmodule SlopcaseWeb.CoreComponents do
           <td
             :for={col <- @col}
             phx-click={@row_click && @row_click.(row)}
-            class={@row_click && "hover:cursor-pointer"}
+            class={@row_click && "data-table__cell--clickable"}
           >
             {render_slot(col, @row_item.(row))}
           </td>
-          <td :if={@action != []} class="w-0 font-semibold">
-            <div class="flex gap-4">
+          <td :if={@action != []} class="data-table__actions">
+            <div class="data-table__action-list">
               <%= for action <- @action do %>
                 {render_slot(action, @row_item.(row))}
               <% end %>
@@ -407,10 +403,10 @@ defmodule SlopcaseWeb.CoreComponents do
   ## Examples
 
       <.icon name="hero-x-mark" />
-      <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+      <.icon name="hero-arrow-path" class="icon icon--xs icon--spin" />
   """
   attr :name, :string, required: true
-  attr :class, :string, default: "size-4"
+  attr :class, :string, default: "icon"
 
   def icon(%{name: "hero-" <> _} = assigns) do
     ~H"""

@@ -35,38 +35,37 @@ defmodule SlopcaseWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
+    <header class="app-header">
+      <div class="app-header__inner">
+        <a href="/" class="brand">
+          <span class="brand-mark">SC</span>
+          <span class="brand-copy">
+            <span class="brand-title">Slopcase</span>
+            <span class="brand-subtitle">AI Slop Showcase</span>
+          </span>
         </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
+        <nav class="app-nav">
+          <a href="#submission-form" class="nav-link">Submit</a>
+          <a href="#submissions-list" class="nav-link">Browse</a>
+        </nav>
+        <a href="#submission-form" class="btn btn--primary">Submit</a>
       </div>
     </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+    <main class="app-main">
+      <div class="app-container">
         {render_slot(@inner_block)}
       </div>
     </main>
+
+    <footer class="app-footer">
+      <div class="app-footer__inner">
+        <p class="footer-text">
+          Built with Phoenix LiveView. No apologies, just vibes.
+        </p>
+        <a href="#submission-form" class="footer-link">Drop your slop</a>
+      </div>
+    </footer>
 
     <.flash_group flash={@flash} />
     """
@@ -84,7 +83,7 @@ defmodule SlopcaseWeb.Layouts do
 
   def flash_group(assigns) do
     ~H"""
-    <div id={@id} aria-live="polite">
+    <div id={@id} aria-live="polite" class="flash-stack">
       <.flash kind={:info} flash={@flash} />
       <.flash kind={:error} flash={@flash} />
 
@@ -97,7 +96,7 @@ defmodule SlopcaseWeb.Layouts do
         hidden
       >
         Attempting to reconnect
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+        <.icon name="hero-arrow-path" class="icon icon--xs icon--spin flash-inline-icon" />
       </.flash>
 
       <.flash
@@ -109,46 +108,10 @@ defmodule SlopcaseWeb.Layouts do
         hidden
       >
         Attempting to reconnect
-        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+        <.icon name="hero-arrow-path" class="icon icon--xs icon--spin flash-inline-icon" />
       </.flash>
     </div>
     """
   end
 
-  @doc """
-  Provides dark vs light theme toggle based on themes defined in app.css.
-
-  See <head> in root.html.heex which applies the theme before page load.
-  """
-  def theme_toggle(assigns) do
-    ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="system"
-      >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="light"
-      >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="dark"
-      >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-    </div>
-    """
-  end
 end

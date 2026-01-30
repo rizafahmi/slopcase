@@ -46,10 +46,10 @@ defmodule SlopcaseWeb.ShowcaseLive do
     <Layouts.app flash={@flash}>
       <section id="showcase-hero" class="showcase-hero">
         <div class="showcase-hero__inner">
-          <p class="showcase-kicker">Let’s embrace the AI Slop</p>
+          <p class="showcase-kicker">Let's embrace the AI Slop</p>
           <h1 class="showcase-title">Vibe-coded apps, proudly imperfect.</h1>
           <p class="showcase-lede">
-            Submit what you built, vote if it’s slop, and celebrate the chaotic beauty of shipping.
+            Submit what you built, vote if it's slop, and celebrate the chaotic beauty of shipping.
           </p>
           <div class="showcase-hero__actions">
             <a class="cta-link" href="#submission-form">Submit your slop</a>
@@ -61,7 +61,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
       <section class="showcase-section">
         <div class="section-header">
           <h2 class="section-title">Submit your creation</h2>
-          <p class="section-subtitle">Tell us what you shipped and why it’s iconic.</p>
+          <p class="section-subtitle">Tell us what you shipped and why it's iconic.</p>
         </div>
 
         <.form for={@form} id="submission-form" phx-change="validate" phx-submit="save">
@@ -69,7 +69,9 @@ defmodule SlopcaseWeb.ShowcaseLive do
             <.input field={@form[:title]} type="text" label="Title" required />
 
             <div class="form-field">
-              <span class="form-label">Is it slop?</span>
+              <div class="form-label">
+                <span class="form-label__text">Is it slop?</span>
+              </div>
               <div class="pill-toggle" role="radiogroup" aria-label="Is it slop">
                 <label class="pill-option" for="submission_slop_true">
                   <input
@@ -104,7 +106,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           </div>
 
           <div class="form-actions">
-            <.button type="submit">Submit the slop</.button>
+            <.button type="submit" variant="primary">Submit the slop</.button>
           </div>
         </.form>
       </section>
@@ -112,7 +114,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
       <section class="showcase-section">
         <div class="section-header">
           <h2 class="section-title">Fresh from the slop stream</h2>
-          <p class="section-subtitle">New drops appear here the moment they’re submitted.</p>
+          <p class="section-subtitle">New drops appear here the moment they're submitted.</p>
         </div>
 
         <div id="submissions-list" class="submissions-grid" phx-update="stream">
