@@ -113,5 +113,4 @@ defmodule SlopcaseWeb.Layouts do
     </div>
     """
   end
-
 end

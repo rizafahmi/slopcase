@@ -24,6 +24,8 @@ defmodule Slopcase.Showcase.Submission do
     |> validate_length(:tools, max: 200)
     |> validate_length(:notes, max: 600)
     |> validate_format(:app_url, ~r/^https?:\/\//, message: "must start with http:// or https://")
-    |> validate_format(:repo_url, ~r/^https?:\/\//, message: "must start with http:// or https://")
+    |> validate_format(:repo_url, ~r/^https?:\/\//,
+      message: "must start with http:// or https://"
+    )
   end
 end

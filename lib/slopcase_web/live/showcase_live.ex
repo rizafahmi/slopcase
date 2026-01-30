@@ -6,6 +6,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
 
   def mount(_params, _session, socket) do
     submissions = Showcase.list_submissions()
+
     form =
       %Submission{}
       |> Showcase.change_submission()
@@ -81,8 +82,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
                     value="true"
                     checked={@form[:slop].value in [true, "true"]}
                     required
-                  />
-                  Slop
+                  /> Slop
                 </label>
                 <label class="pill-option" for="submission_slop_false">
                   <input
@@ -92,8 +92,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
                     value="false"
                     checked={@form[:slop].value in [false, "false"]}
                     required
-                  />
-                  Not slop
+                  /> Not slop
                 </label>
               </div>
             </div>
@@ -101,8 +100,18 @@ defmodule SlopcaseWeb.ShowcaseLive do
             <.input field={@form[:app_url]} type="url" label="App URL" placeholder="https://..." />
             <.input field={@form[:repo_url]} type="url" label="Repo URL" placeholder="https://..." />
             <.input field={@form[:model]} type="text" label="Model" placeholder="GPT-5, Claude, etc." />
-            <.input field={@form[:tools]} type="text" label="Tools" placeholder="Cursor, Replit, etc." />
-            <.input field={@form[:notes]} type="textarea" label="Notes" placeholder="Anything else worth flexing?" />
+            <.input
+              field={@form[:tools]}
+              type="text"
+              label="Tools"
+              placeholder="Cursor, Replit, etc."
+            />
+            <.input
+              field={@form[:notes]}
+              type="textarea"
+              label="Notes"
+              placeholder="Anything else worth flexing?"
+            />
           </div>
 
           <div class="form-actions">
