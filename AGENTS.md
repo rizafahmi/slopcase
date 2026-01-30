@@ -5,6 +5,13 @@ This is a web application written using the Phoenix web framework.
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues
 - Use the already included and available `:req` (`Req`) library for HTTP requests, **avoid** `:httpoison`, `:tesla`, and `:httpc`. Req is included by default and is the preferred HTTP client for Phoenix apps
 
+### Development workflow
+
+- **PhoenixTest-first development**: Write feature tests using PhoenixTest before implementing code. Tests live in `test/slopcase_web/features/`.
+- **One test case at a time**: Focus on a single test case, implement the code to pass it, then move to the next.
+- **Atomic commits**: After each test + implementation + refactor cycle, create a git commit that captures the complete change.
+- PhoenixTest is imported in `test/support/conn_case.ex` and configured for `SlopcaseWeb.Endpoint` in `config/test.exs`.
+
 ### Phoenix v1.8 guidelines
 
 - **Always** begin your LiveView templates with `<Layouts.app flash={@flash} ...>` which wraps all inner content
@@ -13,24 +20,17 @@ This is a web application written using the Phoenix web framework.
   - You failed to follow the Authenticated Routes guidelines, or you failed to pass `current_scope` to `<Layouts.app>`
   - **Always** fix the `current_scope` error by moving your routes to the proper `live_session` and ensure you pass `current_scope` as needed
 - Phoenix v1.8 moved the `<.flash_group>` component to the `Layouts` module. You are **forbidden** from calling `<.flash_group>` outside of the `layouts.ex` module
-- Out of the box, `core_components.ex` imports an `<.icon name="hero-x-mark" class="w-5 h-5"/>` component for for hero icons. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar
+- Out of the box, `core_components.ex` imports an `<.icon name="hero-x-mark" class="icon"/>` component for hero icons. Use size variants like `icon--xs`, `icon--sm`, `icon--lg`. **Always** use the `<.icon>` component for icons, **never** use `Heroicons` modules or similar
 - **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will will save steps and prevent errors
 - If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class with your own values, no default classes are inherited, so your
 custom classes must fully style the input
 
 ### JS and CSS guidelines
 
-- **Use Tailwind CSS classes and custom CSS rules** to create polished, responsive, and visually stunning interfaces.
-- Tailwindcss v4 **no longer needs a tailwind.config.js** and uses a new import syntax in `app.css`:
-
-      @import "tailwindcss" source(none);
-      @source "../css";
-      @source "../js";
-      @source "../../lib/my_app_web";
-
-- **Always use and maintain this import syntax** in the app.css file for projects generated with `phx.new`
+- **Use Open Props design tokens and custom CSS rules** to create polished, responsive, and visually stunning interfaces. Open Props is imported from `assets/vendor/open-props.min.css`.
+- **Do not use Tailwind utility classes or daisyUI components.** This project uses custom CSS classes driven by Open Props variables (e.g., `var(--size-4)`, `var(--shadow-2)`, `var(--radius-3)`).
+- Custom semantic theme variables are defined in `app.css` (e.g., `--surface-1`, `--text-1`, `--brand`, `--slop`, `--clean`). Use these for colors.
 - **Never** use `@apply` when writing raw css
-- **Always** manually write your own tailwind-based components instead of using daisyUI for a unique, world-class design
 - Out of the box **only the app.js and app.css bundles are supported**
   - You cannot reference an external vendor'd script `src` or link `href` in the layouts
   - You must import the vendor deps into app.js and app.css to use them
@@ -162,9 +162,9 @@ custom classes must fully style the input
 - HEEx class attrs support lists, but you must **always** use list `[...]` syntax. You can use the class list syntax to conditionally add classes, **always do this for multiple class values**:
 
       <a class={[
-        "px-2 text-white",
-        @some_flag && "py-5",
-        if(@other_condition, do: "border-red-500", else: "border-blue-100"),
+        "btn",
+        @some_flag && "btn--primary",
+        if(@other_condition, do: "btn--error", else: "btn--ghost"),
         ...
       ]}>Text</a>
 
@@ -173,8 +173,8 @@ custom classes must fully style the input
   and **never** do this, since it's invalid (note the missing `[` and `]`):
 
       <a class={
-        "px-2 text-white",
-        @some_flag && "py-5"
+        "btn",
+        @some_flag && "btn--primary"
       }> ...
       => Raises compile syntax error on invalid HEEx attr syntax
 
@@ -253,8 +253,9 @@ custom classes must fully style the input
 
 ### LiveView tests
 
-- `Phoenix.LiveViewTest` module and `LazyHTML` (included) for making your assertions
-- Form tests are driven by `Phoenix.LiveViewTest`'s `render_submit/2` and `render_change/2` functions
+- **Prefer PhoenixTest** for feature tests (imported in `ConnCase`). It provides `visit/2`, `fill_in/3`, `click_button/2`, `assert_has/2`, `within/3`, etc.
+- `Phoenix.LiveViewTest` module and `LazyHTML` (included) are available for lower-level assertions when needed
+- Form tests can use PhoenixTest's `fill_in/3`, `choose/2`, `check/2`, `click_button/2`, `submit/1`
 - Come up with a step-by-step test plan that splits major test cases into small, isolated files. You may start with simpler tests that verify content exists, gradually add interaction tests
 - **Always reference the key element IDs you added in the LiveView templates in your tests** for `Phoenix.LiveViewTest` functions like `element/2`, `has_element/2`, selectors, etc
 - **Never** tests again raw HTML, **always** use `element/2`, `has_element/2`, and similar: `assert has_element?(view, "#my-form")`
