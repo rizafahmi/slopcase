@@ -134,8 +134,13 @@ defmodule SlopcaseWeb.ShowcaseLive do
       <.form for={@form} id="submission-form" phx-change="validate" phx-submit="save">
         <div class="form-grid">
           <.input field={@form[:title]} type="text" label="Title" required />
-          <.input field={@form[:app_url]} type="url" label="App URL" placeholder="https://..." />
-          <.input field={@form[:repo_url]} type="url" label="Repo URL" placeholder="https://..." />
+          <.input field={@form[:app_url]} type="text" label="App URL" placeholder="example.com" />
+          <.input
+            field={@form[:repo_url]}
+            type="text"
+            label="Repo URL"
+            placeholder="github.com/user/repo"
+          />
           <.input
             field={@form[:model]}
             type="text"
