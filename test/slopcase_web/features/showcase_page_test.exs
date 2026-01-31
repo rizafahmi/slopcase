@@ -4,9 +4,8 @@ defmodule SlopcaseWeb.ShowcasePageTest do
   test "shows the showcase page skeleton", %{conn: conn} do
     conn
     |> visit("/")
-    |> assert_has("#showcase-hero")
-    |> assert_has("#submission-form")
     |> assert_has("#submissions-list")
     |> assert_has("#submissions-empty")
+    |> assert_has("#submission-form")
   end
 end

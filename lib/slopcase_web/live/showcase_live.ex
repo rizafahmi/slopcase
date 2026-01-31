@@ -113,28 +113,9 @@ defmodule SlopcaseWeb.ShowcaseLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <.hero />
-      <.submission_form form={@form} />
       <.submissions_list streams={@streams} vote_counts={@vote_counts} />
+      <.submission_form form={@form} />
     </Layouts.app>
-    """
-  end
-
-  defp hero(assigns) do
-    ~H"""
-    <section id="showcase-hero" class="showcase-hero">
-      <div class="showcase-hero__inner">
-        <p class="showcase-kicker">Let's embrace the AI Slop</p>
-        <h1 class="showcase-title">Vibe-coded apps, proudly imperfect.</h1>
-        <p class="showcase-lede">
-          Submit what you built, vote if it's slop, and celebrate the chaotic beauty of shipping.
-        </p>
-        <div class="showcase-hero__actions">
-          <a class="cta-link" href="#submission-form">Submit your slop</a>
-          <span class="cta-meta">No account. No judgment. Just vibes.</span>
-        </div>
-      </div>
-    </section>
     """
   end
 

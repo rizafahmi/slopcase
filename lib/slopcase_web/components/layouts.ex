@@ -45,10 +45,9 @@ defmodule SlopcaseWeb.Layouts do
           </span>
         </a>
         <nav class="app-nav">
-          <a href="#submission-form" class="nav-link">Submit</a>
           <a href="#submissions-list" class="nav-link">Browse</a>
+          <a href="#submission-form" class="nav-link">Submit</a>
         </nav>
-        <a href="#submission-form" class="btn btn--primary">Submit</a>
       </div>
     </header>
 
@@ -63,7 +62,6 @@ defmodule SlopcaseWeb.Layouts do
         <p class="footer-text">
           Built with Phoenix LiveView. No apologies, just vibes.
         </p>
-        <a href="#submission-form" class="footer-link">Drop your slop</a>
       </div>
     </footer>
 
