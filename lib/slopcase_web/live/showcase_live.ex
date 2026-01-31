@@ -99,6 +99,14 @@ defmodule SlopcaseWeb.ShowcaseLive do
         end
       )
 
+    # Stream items only re-render on stream_insert, so we need to
+    # re-insert the submission to update its displayed vote counts
+    socket =
+      case Showcase.get_submission(submission_id) do
+        nil -> socket
+        submission -> stream_insert(socket, :submissions, submission)
+      end
+
     {:noreply, assign(socket, :vote_counts, new_counts)}
   end
 

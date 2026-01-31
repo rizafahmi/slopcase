@@ -13,6 +13,10 @@ defmodule Slopcase.Showcase do
     |> Repo.all()
   end
 
+  def get_submission(id) do
+    Repo.get(Submission, id)
+  end
+
   def create_submission(attrs) do
     %Submission{}
     |> Submission.changeset(attrs)
