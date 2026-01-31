@@ -12,6 +12,7 @@ defmodule Slopcase.Showcase.Submission do
     field :model, :string
     field :tools, :string
     field :notes, :string
+    field :thumbnail_url, :string
 
     timestamps()
   end

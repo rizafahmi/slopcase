@@ -91,17 +91,14 @@ defmodule SlopcaseWeb.ShowcaseLive do
   def handle_info({:vote_updated, vote}, socket) do
     key = if vote.verdict, do: :slop, else: :not_slop
     submission_id = vote.submission_id
-
-    vote_counts = socket.assigns.vote_counts
+    default = %{slop: 0, not_slop: 0}
 
     new_counts =
       Map.update(
-        vote_counts,
+        socket.assigns.vote_counts,
         submission_id,
-        %{slop: 0, not_slop: 0} |> Map.put(key, 1),
-        fn existing_counts ->
-          Map.update!(existing_counts, key, &(&1 + 1))
-        end
+        Map.put(default, key, 1),
+        &Map.update!(&1, key, fn count -> count + 1 end)
       )
 
     # Stream items only re-render on stream_insert, so we need to
@@ -196,6 +193,17 @@ defmodule SlopcaseWeb.ShowcaseLive do
 
     ~H"""
     <div id={@id} class="submission-card">
+      <div class="submission-card__thumbnail">
+        <img
+          :if={@submission.thumbnail_url}
+          src={@submission.thumbnail_url}
+          alt={"Screenshot of #{@submission.title}"}
+          loading="lazy"
+        />
+        <div :if={!@submission.thumbnail_url} class="submission-card__placeholder">
+          <.icon name="hero-photo" class="w-8 h-8" />
+        </div>
+      </div>
       <div class="submission-card__header">
         <span class="submission-title">{@submission.title}</span>
       </div>

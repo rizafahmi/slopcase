@@ -4,6 +4,7 @@ defmodule Slopcase.Showcase do
   alias Slopcase.Repo
   alias Slopcase.Showcase.Submission
   alias Slopcase.Showcase.SubmissionVote
+  alias Slopcase.Showcase.ThumbnailFetcher
 
   @topic "showcase"
 
@@ -20,7 +21,20 @@ defmodule Slopcase.Showcase do
   def create_submission(attrs) do
     %Submission{}
     |> Submission.changeset(attrs)
+    |> maybe_fetch_thumbnail()
     |> Repo.insert()
+  end
+
+  defp maybe_fetch_thumbnail(%Ecto.Changeset{valid?: false} = changeset), do: changeset
+
+  defp maybe_fetch_thumbnail(changeset) do
+    app_url = Ecto.Changeset.get_field(changeset, :app_url)
+    repo_url = Ecto.Changeset.get_field(changeset, :repo_url)
+
+    case ThumbnailFetcher.fetch_thumbnail(app_url, repo_url) do
+      {:ok, thumbnail_url} -> Ecto.Changeset.put_change(changeset, :thumbnail_url, thumbnail_url)
+      :error -> changeset
+    end
   end
 
   def change_submission(%Submission{} = submission, attrs \\ %{}) do
@@ -49,23 +63,20 @@ defmodule Slopcase.Showcase do
 
   Returns a map of `%{submission_id => %{slop: count, not_slop: count}}`.
   """
-  def vote_counts(submission_ids) when is_list(submission_ids) do
-    if submission_ids == [] do
-      %{}
-    else
-      SubmissionVote
-      |> where([v], v.submission_id in ^submission_ids)
-      |> group_by([v], [v.submission_id, v.verdict])
-      |> select([v], {v.submission_id, v.verdict, count(v.id)})
-      |> Repo.all()
-      |> Enum.reduce(%{}, fn {sub_id, verdict, count}, acc ->
-        key = if verdict, do: :slop, else: :not_slop
+  def vote_counts([]), do: %{}
 
-        Map.update(acc, sub_id, %{slop: 0, not_slop: 0} |> Map.put(key, count), fn sub_counts ->
-          Map.put(sub_counts, key, count)
-        end)
-      end)
-    end
+  def vote_counts(submission_ids) when is_list(submission_ids) do
+    SubmissionVote
+    |> where([v], v.submission_id in ^submission_ids)
+    |> group_by([v], [v.submission_id, v.verdict])
+    |> select([v], {v.submission_id, v.verdict, count(v.id)})
+    |> Repo.all()
+    |> Enum.reduce(%{}, fn {sub_id, verdict, count}, acc ->
+      key = if verdict, do: :slop, else: :not_slop
+      default = %{slop: 0, not_slop: 0}
+
+      Map.update(acc, sub_id, Map.put(default, key, count), &Map.put(&1, key, count))
+    end)
   end
 
   def subscribe do
