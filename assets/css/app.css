@@ -412,6 +412,7 @@ select:focus-visible {
 .form-actions {
   display: flex;
   justify-content: flex-end;
+  margin-top: var(--size-5);
 }
 
 .submissions-grid {
