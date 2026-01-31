@@ -41,7 +41,7 @@ defmodule SlopcaseWeb.Layouts do
           <span class="brand-mark">SC</span>
           <span class="brand-copy">
             <span class="brand-title">Slopcase</span>
-            <span class="brand-subtitle">AI Slop Showcase</span>
+            <span class="brand-subtitle">Let's embrace AI Slop!</span>
           </span>
         </a>
         <nav class="app-nav">
