@@ -6,6 +6,6 @@ defmodule SlopcaseWeb.ShowcasePageTest do
     |> visit("/")
     |> assert_has("#submissions-list")
     |> assert_has("#submissions-empty")
-    |> assert_has("#submission-form")
+    |> assert_has("#submission-modal")
   end
 end

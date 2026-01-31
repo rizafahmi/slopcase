@@ -416,7 +416,107 @@ defmodule SlopcaseWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders a modal dialog.
+
+  ## Examples
+
+      <.modal id="confirm-modal">
+        Are you sure?
+        <:actions>
+          <.button phx-click="confirm">Yes</.button>
+        </:actions>
+      </.modal>
+
+  JS commands may be passed to the `:on_cancel` attribute
+  for the close button and backdrop click.
+  """
+  attr :id, :string, required: true
+  attr :show, :boolean, default: false
+  attr :on_cancel, JS, default: %JS{}
+  slot :inner_block, required: true
+  slot :actions
+
+  def modal(assigns) do
+    ~H"""
+    <div
+      id={@id}
+      phx-mounted={@show && show_modal(@id)}
+      phx-remove={hide_modal(@id)}
+      data-show={show_modal(@id)}
+      data-cancel={JS.exec(@on_cancel, "phx-remove")}
+      class="modal hidden"
+    >
+      <div
+        id={"#{@id}-backdrop"}
+        class="modal__backdrop hidden"
+        aria-hidden="true"
+        phx-click={JS.exec("data-cancel", to: "##{@id}")}
+      />
+      <div
+        class="modal__container hidden"
+        aria-labelledby={"#{@id}-title"}
+        aria-modal="true"
+        role="dialog"
+        tabindex="0"
+        phx-window-keydown={JS.exec("data-cancel", to: "##{@id}")}
+        phx-key="escape"
+        phx-click-away={JS.exec("data-cancel", to: "##{@id}")}
+      >
+        <div class="modal__content">
+          <button
+            type="button"
+            class="modal__close"
+            aria-label="close"
+            phx-click={JS.exec("data-cancel", to: "##{@id}")}
+          >
+            <.icon name="hero-x-mark" class="icon icon--md" />
+          </button>
+          {render_slot(@inner_block)}
+          <div :if={@actions != []} class="modal__actions">
+            {render_slot(@actions)}
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
   ## JS Commands
+
+  def show_modal(js \\ %JS{}, id) when is_binary(id) do
+    js
+    |> JS.show(to: "##{id}")
+    |> JS.show(
+      to: "##{id}-backdrop",
+      time: 200,
+      transition: {"transition-base", "opacity-0", "opacity-100"}
+    )
+    |> JS.show(
+      to: "##{id} .modal__container",
+      time: 200,
+      transition: {"transition-base", "opacity-0 scale-95", "opacity-100 scale-100"}
+    )
+    |> JS.add_class("overflow-hidden", to: "body")
+    |> JS.focus_first(to: "##{id} .modal__content")
+  end
+
+  def hide_modal(js \\ %JS{}, id) when is_binary(id) do
+    js
+    |> JS.hide(
+      to: "##{id}-backdrop",
+      time: 200,
+      transition: {"transition-base", "opacity-100", "opacity-0"}
+    )
+    |> JS.hide(
+      to: "##{id} .modal__container",
+      time: 200,
+      transition: {"transition-base", "opacity-100 scale-100", "opacity-0 scale-95"}
+    )
+    |> JS.hide(to: "##{id}", time: 200)
+    |> JS.remove_class("overflow-hidden", to: "body")
+    |> JS.pop_focus()
+  end
 
   def show(js \\ %JS{}, selector) do
     JS.show(js,

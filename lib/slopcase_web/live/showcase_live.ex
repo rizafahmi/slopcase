@@ -39,6 +39,10 @@ defmodule SlopcaseWeb.ShowcaseLive do
      |> stream(:submissions, submissions)}
   end
 
+  def handle_event("open-submit-modal", _params, socket) do
+    {:noreply, push_event(socket, "js-exec", %{to: "#submission-modal", attr: "data-show"})}
+  end
+
   def handle_event("validate", %{"submission" => submission_params}, socket) do
     changeset =
       %Submission{}
@@ -58,6 +62,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
          |> stream_insert(:submissions, submission, at: 0)
          |> assign(:vote_counts, vote_counts)
          |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
+         |> push_event("js-exec", %{to: "#submission-modal", attr: "phx-remove"})
          |> put_flash(:info, "Slop logged. The vibes are immaculate.")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -114,14 +119,16 @@ defmodule SlopcaseWeb.ShowcaseLive do
     ~H"""
     <Layouts.app flash={@flash}>
       <.submissions_list streams={@streams} vote_counts={@vote_counts} />
-      <.submission_form form={@form} />
+      <:modal>
+        <.submission_modal form={@form} />
+      </:modal>
     </Layouts.app>
     """
   end
 
-  defp submission_form(assigns) do
+  defp submission_modal(assigns) do
     ~H"""
-    <section class="showcase-section">
+    <.modal id="submission-modal">
       <div class="section-header">
         <h2 class="section-title">Submit your creation</h2>
         <p class="section-subtitle">Tell us what you shipped and why it's iconic.</p>
@@ -156,7 +163,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           <.button type="submit" variant="primary">Submit the slop</.button>
         </div>
       </.form>
-    </section>
+    </.modal>
     """
   end
 

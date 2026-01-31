@@ -32,6 +32,7 @@ defmodule SlopcaseWeb.Layouts do
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
   slot :inner_block, required: true
+  slot :modal, doc: "slot for modal dialogs, rendered outside main container"
 
   def app(assigns) do
     ~H"""
@@ -45,8 +46,9 @@ defmodule SlopcaseWeb.Layouts do
           </span>
         </a>
         <nav class="app-nav">
-          <a href="#submissions-list" class="nav-link">Browse</a>
-          <a href="#submission-form" class="nav-link">Submit</a>
+          <button type="button" class="btn btn--primary" phx-click="open-submit-modal">
+            Submit
+          </button>
         </nav>
       </div>
     </header>
@@ -66,6 +68,7 @@ defmodule SlopcaseWeb.Layouts do
     </footer>
 
     <.flash_group flash={@flash} />
+    {render_slot(@modal)}
     """
   end
 

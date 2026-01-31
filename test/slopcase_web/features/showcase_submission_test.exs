@@ -6,6 +6,7 @@ defmodule SlopcaseWeb.ShowcaseSubmissionTest do
   test "submitting an app adds it to the list with vote buttons", %{conn: conn} do
     conn
     |> visit("/")
+    |> click_button(".app-nav button", "Submit")
     |> within("#submission-form", fn session ->
       session
       |> fill_in("Title", with: "SlopGPT")
