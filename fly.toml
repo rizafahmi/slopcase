@@ -1,0 +1,26 @@
+app = "slopcase-1769848144"
+primary_region = "lhr"
+
+[build]
+
+[env]
+  PHX_HOST = "slopcase-1769848144.fly.dev"
+  PORT = "8080"
+  DATABASE_PATH = "/data/slopcase.db"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[[mounts]]
+  source = "slopcase_data"
+  destination = "/data"
