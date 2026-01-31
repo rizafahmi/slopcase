@@ -570,22 +570,39 @@ select:focus-visible {
 }
 
 .submission-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-1);
   padding: var(--size-1) var(--size-3);
   border-radius: var(--radius-round);
   background: var(--surface-2);
   border: 1px solid var(--surface-border);
   font-weight: var(--font-weight-6);
   font-size: var(--font-size-0);
+  color: var(--text-1);
+  text-decoration: none;
+  cursor: pointer;
   transition:
     background var(--motion-fast) var(--motion-ease),
     border-color var(--motion-fast) var(--motion-ease),
-    transform var(--motion-fast) var(--motion-ease);
+    transform var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+.submission-link__external {
+  opacity: 0.5;
+  transition: opacity var(--motion-fast) var(--motion-ease);
 }
 
 .submission-link:hover {
   background: var(--surface-3);
-  border-color: color-mix(in oklab, var(--brand) 30%, var(--surface-border));
+  border-color: color-mix(in oklab, var(--brand) 50%, var(--surface-border));
   transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+
+.submission-link:hover .submission-link__external {
+  opacity: 1;
 }
 
 .submission-link:active {

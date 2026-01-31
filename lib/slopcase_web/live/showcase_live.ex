@@ -220,7 +220,9 @@ defmodule SlopcaseWeb.ShowcaseLive do
           target="_blank"
           rel="noreferrer noopener"
         >
-          App
+          <.icon name="hero-globe-alt" class="icon--xs" />
+          <span>App</span>
+          <.icon name="hero-arrow-top-right-on-square" class="icon--xs submission-link__external" />
         </a>
         <a
           :if={@submission.repo_url}
@@ -229,7 +231,9 @@ defmodule SlopcaseWeb.ShowcaseLive do
           target="_blank"
           rel="noreferrer noopener"
         >
-          Repo
+          <.icon name="hero-code-bracket" class="icon--xs" />
+          <span>Repo</span>
+          <.icon name="hero-arrow-top-right-on-square" class="icon--xs submission-link__external" />
         </a>
       </div>
       <div class="submission-meta">
