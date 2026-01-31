@@ -25,11 +25,24 @@ import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/slopcase"
 import topbar from "../vendor/topbar"
 
+const AutoDismiss = {
+  mounted() {
+    this.timeout = setTimeout(() => {
+      this.el.style.transition = "opacity 0.3s ease-out"
+      this.el.style.opacity = "0"
+      setTimeout(() => this.pushEvent("lv:clear-flash", {key: this.el.dataset.kind}), 300)
+    }, 5000)
+  },
+  destroyed() {
+    clearTimeout(this.timeout)
+  }
+}
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, AutoDismiss},
 })
 
 // Show progress bar on live navigation and form submits
