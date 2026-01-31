@@ -32,7 +32,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
 
     {:ok,
      socket
-     |> assign(:page_title, "Slopcase Showcase")
+     |> assign(:page_title, "Vibecheck")
      |> assign(:form, form)
      |> assign(:vote_counts, vote_counts)
      |> assign(:voter_ip, voter_ip)
@@ -63,7 +63,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
          |> assign(:vote_counts, vote_counts)
          |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
          |> push_event("js-exec", %{to: "#submission-modal", attr: "phx-remove"})
-         |> put_flash(:info, "Slop logged. The vibes are immaculate.")}
+         |> put_flash(:info, "Submitted! The vibes are immaculate.")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
@@ -157,7 +157,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
         </div>
 
         <div class="form-actions">
-          <.button type="submit" variant="primary">Submit the slop</.button>
+          <.button type="submit" variant="primary">Drop it</.button>
         </div>
       </.form>
     </.modal>
@@ -168,13 +168,13 @@ defmodule SlopcaseWeb.ShowcaseLive do
     ~H"""
     <section class="showcase-section">
       <div class="section-header">
-        <h2 class="section-title">Fresh from the slop stream</h2>
+        <h2 class="section-title">Fresh drops</h2>
         <p class="section-subtitle">New drops appear here the moment they're submitted.</p>
       </div>
 
       <div id="submissions-list" class="submissions-grid" phx-update="stream">
         <div id="submissions-empty" class="submissions-empty hidden only:block">
-          No slop yet. Be the first to ship.
+          Nothing here yet. Be the first to ship.
         </div>
         <.submission_card
           :for={{id, submission} <- @streams.submissions}
@@ -253,7 +253,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           phx-value-id={@submission.id}
           phx-value-verdict="false"
         >
-          Not slop <span class="vote-count">{@counts.not_slop}</span>
+          Valid <span class="vote-count">{@counts.not_slop}</span>
         </button>
       </div>
     </div>

@@ -39,10 +39,10 @@ defmodule SlopcaseWeb.Layouts do
     <header class="app-header">
       <div class="app-header__inner">
         <a href="/" class="brand">
-          <span class="brand-mark">SC</span>
+          <span class="brand-mark">VC</span>
           <span class="brand-copy">
-            <span class="brand-title">Slopcase</span>
-            <span class="brand-subtitle">Let's embrace AI Slop!</span>
+            <span class="brand-title">Vibecheck</span>
+            <span class="brand-subtitle">Is it valid or is it slop?</span>
           </span>
         </a>
         <nav class="app-nav">
