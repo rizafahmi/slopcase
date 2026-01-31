@@ -114,7 +114,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
 
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} current_scope={@current_scope}>
       <.submissions_list streams={@streams} vote_counts={@vote_counts} />
       <:modal>
         <.submission_modal form={@form} />

@@ -5,6 +5,14 @@ defmodule SlopcaseWeb.Layouts do
   """
   use SlopcaseWeb, :html
 
+  defp admin?(nil), do: false
+  defp admin?(%{user: nil}), do: false
+  defp admin?(%{user: user}), do: user.admin
+
+  defp logged_in?(nil), do: false
+  defp logged_in?(%{user: nil}), do: false
+  defp logged_in?(%{user: _user}), do: true
+
   # Embed all files in layouts/* within this module.
   # The default root.html.heex file contains the HTML
   # skeleton of your application, namely HTML headers
@@ -46,6 +54,21 @@ defmodule SlopcaseWeb.Layouts do
           </span>
         </a>
         <nav class="app-nav">
+          <.link :if={admin?(@current_scope)} navigate="/admin/submissions" class="nav-link">
+            Admin
+          </.link>
+          <%= if logged_in?(@current_scope) do %>
+            <.link navigate="/users/settings" class="nav-link">
+              Settings
+            </.link>
+            <.link href="/users/log-out" method="delete" class="nav-link">
+              Log out
+            </.link>
+          <% else %>
+            <.link navigate="/users/log-in" class="nav-link">
+              Log in
+            </.link>
+          <% end %>
           <button type="button" class="btn btn--primary" phx-click="open-submit-modal">
             Submit
           </button>

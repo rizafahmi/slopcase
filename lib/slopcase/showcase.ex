@@ -18,6 +18,10 @@ defmodule Slopcase.Showcase do
     Repo.get(Submission, id)
   end
 
+  def get_submission!(id) do
+    Repo.get!(Submission, id)
+  end
+
   def create_submission(attrs) do
     %Submission{}
     |> Submission.changeset(attrs)
@@ -39,6 +43,16 @@ defmodule Slopcase.Showcase do
 
   def change_submission(%Submission{} = submission, attrs \\ %{}) do
     Submission.changeset(submission, attrs)
+  end
+
+  def update_submission(%Submission{} = submission, attrs) do
+    submission
+    |> Submission.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_submission(%Submission{} = submission) do
+    Repo.delete(submission)
   end
 
   @doc """
