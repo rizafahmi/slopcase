@@ -7,7 +7,6 @@ defmodule Slopcase.Showcase.Submission do
 
   schema "submissions" do
     field :title, :string
-    field :slop, :boolean
     field :app_url, :string
     field :repo_url, :string
     field :model, :string
@@ -19,8 +18,8 @@ defmodule Slopcase.Showcase.Submission do
 
   def changeset(submission, attrs) do
     submission
-    |> cast(attrs, [:title, :slop, :app_url, :repo_url, :model, :tools, :notes])
-    |> validate_required([:title, :slop])
+    |> cast(attrs, [:title, :app_url, :repo_url, :model, :tools, :notes])
+    |> validate_required([:title])
     |> validate_length(:title, min: 2, max: 120)
     |> validate_length(:model, max: 120)
     |> validate_length(:tools, max: 200)

@@ -5,17 +5,37 @@ defmodule SlopcaseWeb.ShowcaseLive do
   alias Slopcase.Showcase.Submission
 
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Showcase.subscribe()
+    end
+
     submissions = Showcase.list_submissions()
+    submission_ids = Enum.map(submissions, & &1.id)
+    vote_counts = Showcase.vote_counts(submission_ids)
 
     form =
       %Submission{}
       |> Showcase.change_submission()
       |> to_form()
 
+    voter_ip =
+      if connected?(socket) do
+        case get_connect_info(socket, :peer_data) do
+          %{address: addr} -> addr |> :inet.ntoa() |> to_string()
+          # Fallback for test environment where peer_data is not available
+          _ -> "127.0.0.1"
+        end
+      else
+        # Static render (pre-connect), use fallback
+        "127.0.0.1"
+      end
+
     {:ok,
      socket
      |> assign(:page_title, "Slopcase Showcase")
      |> assign(:form, form)
+     |> assign(:vote_counts, vote_counts)
+     |> assign(:voter_ip, voter_ip)
      |> stream(:submissions, submissions)}
   end
 
@@ -31,9 +51,12 @@ defmodule SlopcaseWeb.ShowcaseLive do
   def handle_event("save", %{"submission" => submission_params}, socket) do
     case Showcase.create_submission(submission_params) do
       {:ok, submission} ->
+        vote_counts = Map.put(socket.assigns.vote_counts, submission.id, %{slop: 0, not_slop: 0})
+
         {:noreply,
          socket
          |> stream_insert(:submissions, submission, at: 0)
+         |> assign(:vote_counts, vote_counts)
          |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
          |> put_flash(:info, "Slop logged. The vibes are immaculate.")}
 
@@ -42,12 +65,49 @@ defmodule SlopcaseWeb.ShowcaseLive do
     end
   end
 
+  def handle_event("vote", %{"id" => id_str, "verdict" => verdict_str}, socket) do
+    submission_id = String.to_integer(id_str)
+    verdict = verdict_str == "true"
+    voter_ip = socket.assigns.voter_ip
+
+    if is_nil(voter_ip) do
+      {:noreply, put_flash(socket, :error, "Unable to record vote.")}
+    else
+      case Showcase.vote(submission_id, verdict, voter_ip) do
+        {:ok, _vote} ->
+          {:noreply, socket}
+
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "You've already voted on this submission.")}
+      end
+    end
+  end
+
+  def handle_info({:vote_updated, vote}, socket) do
+    key = if vote.verdict, do: :slop, else: :not_slop
+    submission_id = vote.submission_id
+
+    vote_counts = socket.assigns.vote_counts
+
+    new_counts =
+      Map.update(
+        vote_counts,
+        submission_id,
+        %{slop: 0, not_slop: 0} |> Map.put(key, 1),
+        fn existing_counts ->
+          Map.update!(existing_counts, key, &(&1 + 1))
+        end
+      )
+
+    {:noreply, assign(socket, :vote_counts, new_counts)}
+  end
+
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
       <.hero />
       <.submission_form form={@form} />
-      <.submissions_list streams={@streams} />
+      <.submissions_list streams={@streams} vote_counts={@vote_counts} />
     </Layouts.app>
     """
   end
@@ -81,14 +141,6 @@ defmodule SlopcaseWeb.ShowcaseLive do
       <.form for={@form} id="submission-form" phx-change="validate" phx-submit="save">
         <div class="form-grid">
           <.input field={@form[:title]} type="text" label="Title" required />
-
-          <div class="form-field">
-            <div class="form-label">
-              <span class="form-label__text">Is it slop?</span>
-            </div>
-            <.slop_radio_group field={@form[:slop]} />
-          </div>
-
           <.input field={@form[:app_url]} type="url" label="App URL" placeholder="https://..." />
           <.input field={@form[:repo_url]} type="url" label="Repo URL" placeholder="https://..." />
           <.input
@@ -119,33 +171,6 @@ defmodule SlopcaseWeb.ShowcaseLive do
     """
   end
 
-  defp slop_radio_group(assigns) do
-    ~H"""
-    <div class="pill-toggle" role="radiogroup" aria-label="Is it slop">
-      <label class="pill-option" for="submission_slop_true">
-        <input
-          type="radio"
-          id="submission_slop_true"
-          name={@field.name}
-          value="true"
-          checked={@field.value in [true, "true"]}
-          required
-        /> Slop
-      </label>
-      <label class="pill-option" for="submission_slop_false">
-        <input
-          type="radio"
-          id="submission_slop_false"
-          name={@field.name}
-          value="false"
-          checked={@field.value in [false, "false"]}
-          required
-        /> Not slop
-      </label>
-    </div>
-    """
-  end
-
   defp submissions_list(assigns) do
     ~H"""
     <section class="showcase-section">
@@ -162,6 +187,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           :for={{id, submission} <- @streams.submissions}
           id={id}
           submission={submission}
+          vote_counts={@vote_counts}
         />
       </div>
     </section>
@@ -169,11 +195,13 @@ defmodule SlopcaseWeb.ShowcaseLive do
   end
 
   defp submission_card(assigns) do
+    counts = Map.get(assigns.vote_counts, assigns.submission.id, %{slop: 0, not_slop: 0})
+    assigns = assign(assigns, :counts, counts)
+
     ~H"""
     <div id={@id} class="submission-card">
       <div class="submission-card__header">
         <span class="submission-title">{@submission.title}</span>
-        <span class={slop_badge_class(@submission.slop)}>{slop_label(@submission.slop)}</span>
       </div>
       <div class="submission-card__links">
         <a
@@ -204,13 +232,27 @@ defmodule SlopcaseWeb.ShowcaseLive do
         </span>
       </div>
       <p :if={@submission.notes} class="submission-notes">{@submission.notes}</p>
+      <div class="submission-votes">
+        <button
+          type="button"
+          class="vote-btn vote-btn--slop"
+          phx-click="vote"
+          phx-value-id={@submission.id}
+          phx-value-verdict="true"
+        >
+          Slop <span class="vote-count">{@counts.slop}</span>
+        </button>
+        <button
+          type="button"
+          class="vote-btn vote-btn--clean"
+          phx-click="vote"
+          phx-value-id={@submission.id}
+          phx-value-verdict="false"
+        >
+          Not slop <span class="vote-count">{@counts.not_slop}</span>
+        </button>
+      </div>
     </div>
     """
   end
-
-  defp slop_label(true), do: "Slop"
-  defp slop_label(false), do: "Not slop"
-
-  defp slop_badge_class(true), do: ["submission-pill", "submission-pill--slop"]
-  defp slop_badge_class(false), do: ["submission-pill", "submission-pill--clean"]
 end

@@ -586,6 +586,59 @@ select:focus-visible {
   color: var(--text-1);
 }
 
+.submission-votes {
+  display: flex;
+  gap: var(--size-2);
+  margin-top: var(--size-2);
+}
+
+.vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2);
+  padding: var(--size-2) var(--size-3);
+  border-radius: var(--radius-round);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-2);
+  font-size: var(--font-size-0);
+  font-weight: var(--font-weight-6);
+  cursor: pointer;
+  transition: background 0.2s var(--ease-3), border-color 0.2s var(--ease-3), transform 0.15s var(--ease-3);
+}
+
+.vote-btn:hover {
+  transform: translateY(-1px);
+}
+
+.vote-btn:active {
+  transform: translateY(0);
+}
+
+.vote-btn--slop {
+  color: var(--slop);
+}
+
+.vote-btn--slop:hover {
+  background: color-mix(in oklab, var(--slop) 15%, var(--surface-2));
+  border-color: color-mix(in oklab, var(--slop) 40%, var(--surface-border));
+}
+
+.vote-btn--clean {
+  color: var(--clean);
+}
+
+.vote-btn--clean:hover {
+  background: color-mix(in oklab, var(--clean) 15%, var(--surface-2));
+  border-color: color-mix(in oklab, var(--clean) 40%, var(--surface-border));
+}
+
+.vote-count {
+  padding: 2px var(--size-2);
+  border-radius: var(--radius-round);
+  background: var(--surface-3);
+  font-size: var(--font-size-00);
+}
+
 .flash-stack {
   position: fixed;
   top: var(--size-5);
