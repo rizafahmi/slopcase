@@ -37,3 +37,6 @@ config :phoenix_live_view,
   enable_expensive_runtime_checks: true
 
 config :phoenix_test, :endpoint, SlopcaseWeb.Endpoint
+
+# Run thumbnail fetching synchronously in tests to avoid DB locking
+config :slopcase, :sync_thumbnail_fetch, true

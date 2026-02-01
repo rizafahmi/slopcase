@@ -4,8 +4,8 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
   alias Slopcase.Showcase
 
   @impl true
-  def mount(%{"id" => id}, _session, socket) do
-    case Showcase.get_submission(id) do
+  def mount(%{"slug" => slug}, _session, socket) do
+    case Showcase.get_submission(slug) do
       nil ->
         {:ok,
          socket
@@ -14,9 +14,6 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
 
       submission ->
         if connected?(socket), do: Showcase.subscribe()
-
-        vote_counts = Showcase.vote_counts([submission.id])
-        counts = Map.get(vote_counts, submission.id, %{slop: 0, not_slop: 0})
 
         voter_ip =
           if connected?(socket) do
@@ -31,7 +28,6 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
         {:ok,
          socket
          |> assign(:submission, submission)
-         |> assign(:counts, counts)
          |> assign(:voter_ip, voter_ip)
          |> assign(:page_title, submission.title)
          |> assign(:meta_description, build_meta_description(submission))
@@ -71,9 +67,11 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
   @impl true
   def handle_info({:vote_updated, vote}, socket) do
     if vote.submission_id == socket.assigns.submission.id do
-      key = if vote.verdict, do: :slop, else: :not_slop
-      new_counts = Map.update!(socket.assigns.counts, key, &(&1 + 1))
-      {:noreply, assign(socket, :counts, new_counts)}
+      # Reload the submission to get updated counts
+      case Showcase.get_submission(vote.submission_id) do
+        nil -> {:noreply, socket}
+        submission -> {:noreply, assign(socket, :submission, submission)}
+      end
     else
       {:noreply, socket}
     end
@@ -161,7 +159,7 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
                   phx-click="vote"
                   phx-value-verdict="true"
                 >
-                  🗑️ Slop <span class="vote-count">{@counts.slop}</span>
+                  🗑️ Slop <span class="vote-count">{@submission.slop_count || 0}</span>
                 </button>
                 <button
                   type="button"
@@ -169,7 +167,7 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
                   phx-click="vote"
                   phx-value-verdict="false"
                 >
-                  ✨ Valid <span class="vote-count">{@counts.not_slop}</span>
+                  ✨ Valid <span class="vote-count">{@submission.not_slop_count || 0}</span>
                 </button>
               </div>
             </div>
@@ -199,7 +197,7 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
       target="_blank"
       rel="noopener noreferrer"
       class="share-btn share-btn--twitter"
-      data-submission-url={~p"/p/#{@submission.id}"}
+      data-submission-url={~p"/p/#{@submission.slug}"}
       onclick="this.href = this.href + encodeURIComponent(window.location.origin + this.dataset.submissionUrl)"
     >
       <svg class="icon--sm" viewBox="0 0 24 24" fill="currentColor">
@@ -215,7 +213,7 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
     <button
       type="button"
       class="share-btn share-btn--copy"
-      data-submission-url={~p"/p/#{@submission.id}"}
+      data-submission-url={~p"/p/#{@submission.slug}"}
       onclick="navigator.clipboard.writeText(window.location.origin + this.dataset.submissionUrl).then(() => { this.querySelector('span').textContent = 'Copied!'; setTimeout(() => this.querySelector('span').textContent = 'Copy Link', 2000); })"
     >
       <.icon name="hero-link" class="icon--sm" />

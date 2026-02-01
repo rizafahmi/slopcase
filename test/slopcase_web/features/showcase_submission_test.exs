@@ -19,8 +19,8 @@ defmodule SlopcaseWeb.ShowcaseSubmissionTest do
     end)
     |> assert_has("#submissions-list .submission-card", count: 1)
     |> assert_has("#submissions-list .submission-title", text: "SlopGPT")
-    |> assert_has("#submissions-list .vote-btn--slop", text: "Slop")
-    |> assert_has("#submissions-list .vote-btn--clean", text: "Valid")
+    |> assert_has("#submissions-list .vote-btn--slop", text: "Miss")
+    |> assert_has("#submissions-list .vote-btn--clean", text: "Hit")
     |> assert_has("#submissions-list .submission-link", text: "App")
     |> assert_has("#submissions-list .submission-link", text: "Repo")
   end
@@ -32,8 +32,8 @@ defmodule SlopcaseWeb.ShowcaseSubmissionTest do
     assert {:ok, _vote} = Showcase.vote(submission.id, true, "127.0.0.1")
 
     # Verify the vote was recorded
-    counts = Showcase.vote_counts([submission.id])
-    assert counts[submission.id].slop == 1
+    updated = Showcase.get_submission(submission.id)
+    assert updated.slop_count == 1
 
     # Now test the UI shows the vote count
     conn
@@ -52,7 +52,7 @@ defmodule SlopcaseWeb.ShowcaseSubmissionTest do
     assert {"you have already voted on this submission", _} = changeset.errors[:submission_id]
 
     # Count should still be 1
-    counts = Showcase.vote_counts([submission.id])
-    assert counts[submission.id].slop == 1
+    updated = Showcase.get_submission(submission.id)
+    assert updated.slop_count == 1
   end
 end

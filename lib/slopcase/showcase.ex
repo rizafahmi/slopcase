@@ -8,18 +8,38 @@ defmodule Slopcase.Showcase do
 
   @topic "showcase"
 
-  def list_submissions do
-    Submission
-    |> order_by(desc: :inserted_at)
+  def list_submissions(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 20)
+    offset = Keyword.get(opts, :offset, 0)
+
+    submission_query()
+    |> order_by(desc: :inserted_at, desc: :id)
+    |> limit(^limit)
+    |> offset(^offset)
     |> Repo.all()
   end
 
-  def get_submission(id) do
-    Repo.get(Submission, id)
+  def get_submission(id_or_slug) do
+    query = submission_query()
+
+    if is_integer(id_or_slug) or String.match?(to_string(id_or_slug), ~r/^\d+$/) do
+      Repo.one(from s in query, where: s.id == ^id_or_slug)
+    else
+      Repo.one(from s in query, where: s.slug == ^id_or_slug)
+    end
   end
 
-  def get_submission!(id) do
-    Repo.get!(Submission, id)
+  def get_submission!(id_or_slug) do
+    query = submission_query()
+
+    result =
+      if is_integer(id_or_slug) or String.match?(to_string(id_or_slug), ~r/^\d+$/) do
+        Repo.one(from s in query, where: s.id == ^id_or_slug)
+      else
+        Repo.one(from s in query, where: s.slug == ^id_or_slug)
+      end
+
+    result || raise Ecto.NoResultsError, queryable: Submission
   end
 
   def create_submission(attrs) do
@@ -28,11 +48,15 @@ defmodule Slopcase.Showcase do
     |> Repo.insert()
     |> tap(fn
       {:ok, submission} ->
-        Task.Supervisor.start_child(Slopcase.TaskSupervisor, fn ->
-          fetch_and_update_thumbnail(submission)
-        end)
-
         broadcast_created({:ok, submission})
+
+        if Application.get_env(:slopcase, :sync_thumbnail_fetch) do
+          fetch_and_update_thumbnail(submission)
+        else
+          Task.Supervisor.start_child(Slopcase.TaskSupervisor, fn ->
+            fetch_and_update_thumbnail(submission)
+          end)
+        end
 
       _ ->
         :ok
@@ -81,25 +105,14 @@ defmodule Slopcase.Showcase do
     |> broadcast_vote()
   end
 
-  @doc """
-  Returns vote counts for the given submission IDs.
-
-  Returns a map of `%{submission_id => %{slop: count, not_slop: count}}`.
-  """
-  def vote_counts([]), do: %{}
-
-  def vote_counts(submission_ids) when is_list(submission_ids) do
-    SubmissionVote
-    |> where([v], v.submission_id in ^submission_ids)
-    |> group_by([v], [v.submission_id, v.verdict])
-    |> select([v], {v.submission_id, v.verdict, count(v.id)})
-    |> Repo.all()
-    |> Enum.reduce(%{}, fn {sub_id, verdict, count}, acc ->
-      key = if verdict, do: :slop, else: :not_slop
-      default = %{slop: 0, not_slop: 0}
-
-      Map.update(acc, sub_id, Map.put(default, key, count), &Map.put(&1, key, count))
-    end)
+  defp submission_query do
+    Submission
+    |> join(:left, [s], v in SubmissionVote, on: s.id == v.submission_id)
+    |> group_by([s], s.id)
+    |> select([s, v], %{s |
+      slop_count: filter(count(v.id), v.verdict == true),
+      not_slop_count: filter(count(v.id), v.verdict == false)
+    })
   end
 
   def subscribe do

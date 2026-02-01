@@ -9,9 +9,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
       Showcase.subscribe()
     end
 
-    submissions = Showcase.list_submissions()
-    submission_ids = Enum.map(submissions, & &1.id)
-    vote_counts = Showcase.vote_counts(submission_ids)
+    submissions = Showcase.list_submissions(limit: 20)
 
     form =
       %Submission{}
@@ -34,8 +32,11 @@ defmodule SlopcaseWeb.ShowcaseLive do
      socket
      |> assign(:page_title, "Vibecheck")
      |> assign(:form, form)
-     |> assign(:vote_counts, vote_counts)
      |> assign(:voter_ip, voter_ip)
+     |> assign(:page, 1)
+     # We need to track if we have more submissions to load.
+     # A simple heuristic check: if we got exactly the limit (20), assume more exist.
+     |> assign(:has_more?, length(submissions) == 20)
      |> stream(:submissions, submissions)}
   end
 
@@ -55,13 +56,10 @@ defmodule SlopcaseWeb.ShowcaseLive do
   def handle_event("save", %{"submission" => submission_params}, socket) do
     case Showcase.create_submission(submission_params) do
       {:ok, submission} ->
-        vote_counts = Map.put(socket.assigns.vote_counts, submission.id, %{slop: 0, not_slop: 0})
-
-        {:noreply,
-         socket
-         |> stream_insert(:submissions, submission, at: 0)
-         |> assign(:vote_counts, vote_counts)
-         |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
+         {:noreply,
+          socket
+          |> stream_insert(:submissions, submission, at: 0)
+          |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
          |> push_event("js-exec", %{to: "#submission-modal", attr: "phx-remove"})
          |> put_flash(:info, "Submitted! The vibes are immaculate.")}
 
@@ -88,13 +86,20 @@ defmodule SlopcaseWeb.ShowcaseLive do
     end
   end
 
-  def handle_info({:submission_created, submission}, socket) do
-    vote_counts = Map.put(socket.assigns.vote_counts, submission.id, %{slop: 0, not_slop: 0})
+  def handle_event("load-more", _params, socket) do
+    page = socket.assigns.page + 1
+    offset = (page - 1) * 20
+    submissions = Showcase.list_submissions(limit: 20, offset: offset)
 
     {:noreply,
      socket
-     |> assign(:vote_counts, vote_counts)
-     |> stream_insert(:submissions, submission, at: 0)}
+     |> assign(:page, page)
+     |> assign(:has_more?, length(submissions) == 20)
+     |> stream(:submissions, submissions, at: -1)}
+  end
+
+  def handle_info({:submission_created, submission}, socket) do
+    {:noreply, stream_insert(socket, :submissions, submission, at: 0)}
   end
 
   def handle_info({:submission_updated, submission}, socket) do
@@ -102,33 +107,20 @@ defmodule SlopcaseWeb.ShowcaseLive do
   end
 
   def handle_info({:vote_updated, vote}, socket) do
-    key = if vote.verdict, do: :slop, else: :not_slop
-    submission_id = vote.submission_id
-    default = %{slop: 0, not_slop: 0}
-
-    new_counts =
-      Map.update(
-        socket.assigns.vote_counts,
-        submission_id,
-        Map.put(default, key, 1),
-        &Map.update!(&1, key, fn count -> count + 1 end)
-      )
-
-    # Stream items only re-render on stream_insert, so we need to
-    # re-insert the submission to update its displayed vote counts
-    socket =
-      case Showcase.get_submission(submission_id) do
-        nil -> socket
-        submission -> stream_insert(socket, :submissions, submission)
-      end
-
-    {:noreply, assign(socket, :vote_counts, new_counts)}
+    # Re-fetch the submission to get updated counts
+    # This is more efficient than re-fetching everything, but still hits DB
+    # Optimized flow: the DB update happened, now we get the fresh state.
+    # Since we are using virtual fields, we must reload the submission.
+    case Showcase.get_submission(vote.submission_id) do
+      nil -> {:noreply, socket}
+      submission -> {:noreply, stream_insert(socket, :submissions, submission)}
+    end
   end
 
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <.submissions_list streams={@streams} vote_counts={@vote_counts} />
+      <.submissions_list streams={@streams} has_more?={@has_more?} />
       <:modal>
         <.submission_modal form={@form} />
       </:modal>
@@ -198,17 +190,17 @@ defmodule SlopcaseWeb.ShowcaseLive do
           :for={{id, submission} <- @streams.submissions}
           id={id}
           submission={submission}
-          vote_counts={@vote_counts}
         />
+      </div>
+
+      <div :if={@has_more?} class="load-more-container mt-8 flex justify-center">
+        <.button phx-click="load-more">Load More</.button>
       </div>
     </section>
     """
   end
 
   defp submission_card(assigns) do
-    counts = Map.get(assigns.vote_counts, assigns.submission.id, %{slop: 0, not_slop: 0})
-    assigns = assign(assigns, :counts, counts)
-
     ~H"""
     <div id={@id} class="submission-card">
       <div class="submission-card__thumbnail">
@@ -223,7 +215,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
         </div>
       </div>
       <div class="submission-card__header">
-        <.link navigate={~p"/p/#{@submission.id}"} class="submission-title">
+        <.link navigate={~p"/p/#{@submission.slug}"} class="submission-title">
           {@submission.title}
         </.link>
       </div>
@@ -268,7 +260,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           phx-value-id={@submission.id}
           phx-value-verdict="true"
         >
-          Miss <span class="vote-count">{@counts.slop}</span>
+          Miss <span class="vote-count">{@submission.slop_count || 0}</span>
         </button>
         <button
           type="button"
@@ -277,7 +269,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           phx-value-id={@submission.id}
           phx-value-verdict="false"
         >
-          Hit <span class="vote-count">{@counts.not_slop}</span>
+          Hit <span class="vote-count">{@submission.not_slop_count || 0}</span>
         </button>
       </div>
     </div>
