@@ -14,10 +14,6 @@ defmodule SlopcaseWeb.UserLive.Login do
             <p class="auth-subtitle">
               <%= if @current_scope do %>
                 You need to reauthenticate to perform sensitive actions on your account.
-              <% else %>
-                Don't have an account?
-                <.link navigate={~p"/users/register"} class="auth-link">Sign up</.link>
-                for an account now.
               <% end %>
             </p>
           </header>

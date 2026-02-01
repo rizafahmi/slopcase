@@ -12,10 +12,7 @@ defmodule SlopcaseWeb.UserLive.Registration do
         <div class="auth-card">
           <header class="auth-header">
             <h1 class="auth-title">Create an account</h1>
-            <p class="auth-subtitle">
-              Already registered? <.link navigate={~p"/users/log-in"} class="auth-link">Log in</.link>
-              to your account now.
-            </p>
+
           </header>
 
           <.form

@@ -64,10 +64,6 @@ defmodule SlopcaseWeb.Layouts do
             <.link href="/users/log-out" method="delete" class="nav-link">
               Log out
             </.link>
-          <% else %>
-            <.link navigate="/users/log-in" class="nav-link">
-              Log in
-            </.link>
           <% end %>
           <button type="button" class="btn btn--primary" phx-click="open-submit-modal">
             Submit
