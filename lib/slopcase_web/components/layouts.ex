@@ -13,6 +13,15 @@ defmodule SlopcaseWeb.Layouts do
   defp logged_in?(%{user: nil}), do: false
   defp logged_in?(%{user: _user}), do: true
 
+  defp app_css do
+    path = Application.app_dir(:slopcase, "priv/static/assets/css/app.css")
+
+    case File.read(path) do
+      {:ok, content} -> content
+      _ -> "/* CSS not loaded */"
+    end
+  end
+
   # Embed all files in layouts/* within this module.
   # The default root.html.heex file contains the HTML
   # skeleton of your application, namely HTML headers

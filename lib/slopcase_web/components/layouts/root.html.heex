@@ -24,7 +24,9 @@
     <.live_title default="Vibecheck" suffix=" · Vibecheck">
       {assigns[:page_title]}
     </.live_title>
-    <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+    <style>
+      {app_css()}
+    </style>
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
   </head>

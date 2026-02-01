@@ -10,6 +10,7 @@ defmodule SlopcaseWeb.ShowcaseLiveTest do
       {:ok, _live, html} = live(conn, "/")
       assert html =~ "Fresh drops"
       assert html =~ "Nothing here yet"
+      assert html =~ "<style>"
     end
 
     test "renders existing submissions", %{conn: conn} do
