@@ -23,6 +23,7 @@ defmodule SlopcaseWeb.Router do
     live_session :public,
       on_mount: [{SlopcaseWeb.UserAuth, :mount_current_scope}] do
       live "/", ShowcaseLive, :index
+      live "/p/:id", SubmissionLive.Show, :show
     end
   end
 

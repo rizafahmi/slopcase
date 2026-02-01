@@ -4,7 +4,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="Slopcase">
+
+    <%!-- SEO Meta Tags --%>
+    <meta name="description" content={assigns[:meta_description] || "A showcase for AI-generated projects. Submit your AI-built apps and let the community vote: miss or hit?"} />
+
+    <%!-- OpenGraph Meta Tags --%>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Vibecheck" />
+    <meta property="og:title" content={assigns[:page_title] || "Vibecheck"} />
+    <meta property="og:description" content={assigns[:meta_description] || "A showcase for AI-generated projects. Submit your AI-built apps and let the community vote: miss or hit?"} />
+    <meta :if={assigns[:og_image]} property="og:image" content={assigns[:og_image]} />
+
+    <%!-- Twitter Card Meta Tags --%>
+    <meta name="twitter:card" content={if assigns[:og_image], do: "summary_large_image", else: "summary"} />
+    <meta name="twitter:title" content={assigns[:page_title] || "Vibecheck"} />
+    <meta name="twitter:description" content={assigns[:meta_description] || "A showcase for AI-generated projects. Submit your AI-built apps and let the community vote: miss or hit?"} />
+    <meta :if={assigns[:og_image]} name="twitter:image" content={assigns[:og_image]} />
+
+    <.live_title default="Vibecheck" suffix=" · Vibecheck">
       {assigns[:page_title]}
     </.live_title>
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />

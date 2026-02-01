@@ -88,6 +88,19 @@ defmodule SlopcaseWeb.ShowcaseLive do
     end
   end
 
+  def handle_info({:submission_created, submission}, socket) do
+    vote_counts = Map.put(socket.assigns.vote_counts, submission.id, %{slop: 0, not_slop: 0})
+
+    {:noreply,
+     socket
+     |> assign(:vote_counts, vote_counts)
+     |> stream_insert(:submissions, submission, at: 0)}
+  end
+
+  def handle_info({:submission_updated, submission}, socket) do
+    {:noreply, stream_insert(socket, :submissions, submission)}
+  end
+
   def handle_info({:vote_updated, vote}, socket) do
     key = if vote.verdict, do: :slop, else: :not_slop
     submission_id = vote.submission_id
@@ -127,7 +140,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
     ~H"""
     <.modal id="submission-modal">
       <div class="section-header">
-        <h2 class="section-title">Submit your creation</h2>
+        <h2 class="section-title">Check the Vibe</h2>
         <p class="section-subtitle">Tell us what you shipped and why it's iconic.</p>
       </div>
 
@@ -210,7 +223,9 @@ defmodule SlopcaseWeb.ShowcaseLive do
         </div>
       </div>
       <div class="submission-card__header">
-        <span class="submission-title">{@submission.title}</span>
+        <.link navigate={~p"/p/#{@submission.id}"} class="submission-title">
+          {@submission.title}
+        </.link>
       </div>
       <div class="submission-card__links">
         <a
@@ -253,7 +268,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           phx-value-id={@submission.id}
           phx-value-verdict="true"
         >
-          Slop <span class="vote-count">{@counts.slop}</span>
+          Miss <span class="vote-count">{@counts.slop}</span>
         </button>
         <button
           type="button"
@@ -262,7 +277,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           phx-value-id={@submission.id}
           phx-value-verdict="false"
         >
-          Valid <span class="vote-count">{@counts.not_slop}</span>
+          Hit <span class="vote-count">{@counts.not_slop}</span>
         </button>
       </div>
     </div>

@@ -25,19 +25,27 @@ defmodule Slopcase.Showcase do
   def create_submission(attrs) do
     %Submission{}
     |> Submission.changeset(attrs)
-    |> maybe_fetch_thumbnail()
     |> Repo.insert()
+    |> tap(fn
+      {:ok, submission} ->
+        Task.Supervisor.start_child(Slopcase.TaskSupervisor, fn ->
+          fetch_and_update_thumbnail(submission)
+        end)
+
+        broadcast_created({:ok, submission})
+
+      _ ->
+        :ok
+    end)
   end
 
-  defp maybe_fetch_thumbnail(%Ecto.Changeset{valid?: false} = changeset), do: changeset
+  defp fetch_and_update_thumbnail(submission) do
+    case ThumbnailFetcher.fetch_thumbnail(submission.app_url, submission.repo_url) do
+      {:ok, thumbnail_url} ->
+        update_submission(submission, %{thumbnail_url: thumbnail_url})
 
-  defp maybe_fetch_thumbnail(changeset) do
-    app_url = Ecto.Changeset.get_field(changeset, :app_url)
-    repo_url = Ecto.Changeset.get_field(changeset, :repo_url)
-
-    case ThumbnailFetcher.fetch_thumbnail(app_url, repo_url) do
-      {:ok, thumbnail_url} -> Ecto.Changeset.put_change(changeset, :thumbnail_url, thumbnail_url)
-      :error -> changeset
+      :error ->
+        :ok
     end
   end
 
@@ -49,6 +57,7 @@ defmodule Slopcase.Showcase do
     submission
     |> Submission.changeset(attrs)
     |> Repo.update()
+    |> broadcast_updated()
   end
 
   def delete_submission(%Submission{} = submission) do
@@ -103,4 +112,18 @@ defmodule Slopcase.Showcase do
   end
 
   defp broadcast_vote(result), do: result
+
+  defp broadcast_created({:ok, submission} = result) do
+    Phoenix.PubSub.broadcast(Slopcase.PubSub, @topic, {:submission_created, submission})
+    result
+  end
+
+  defp broadcast_created(result), do: result
+
+  defp broadcast_updated({:ok, submission} = result) do
+    Phoenix.PubSub.broadcast(Slopcase.PubSub, @topic, {:submission_updated, submission})
+    result
+  end
+
+  defp broadcast_updated(result), do: result
 end

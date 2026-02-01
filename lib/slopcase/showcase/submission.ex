@@ -19,7 +19,7 @@ defmodule Slopcase.Showcase.Submission do
 
   def changeset(submission, attrs) do
     submission
-    |> cast(attrs, [:title, :app_url, :repo_url, :model, :tools, :notes])
+    |> cast(attrs, [:title, :app_url, :repo_url, :model, :tools, :notes, :thumbnail_url])
     |> normalize_urls([:app_url, :repo_url])
     |> validate_required([:title])
     |> validate_length(:title, min: 2, max: 120)

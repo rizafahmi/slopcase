@@ -14,6 +14,7 @@ defmodule Slopcase.Application do
        repos: Application.fetch_env!(:slopcase, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:slopcase, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Slopcase.PubSub},
+      {Task.Supervisor, name: Slopcase.TaskSupervisor},
       # Start a worker by calling: Slopcase.Worker.start_link(arg)
       # {Slopcase.Worker, arg},
       # Start to serve requests, typically the last entry
