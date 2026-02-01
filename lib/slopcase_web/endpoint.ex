@@ -24,7 +24,9 @@ defmodule SlopcaseWeb.Endpoint do
     at: "/",
     from: :slopcase,
     gzip: not code_reloading?,
-    only: SlopcaseWeb.static_paths()
+    only: SlopcaseWeb.static_paths(),
+    # Set long cache lifetime for digested assets (1 year)
+    cache_control_for_etags: "public, max-age=31536000, immutable"
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
