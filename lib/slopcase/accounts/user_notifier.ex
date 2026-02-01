@@ -6,10 +6,13 @@ defmodule Slopcase.Accounts.UserNotifier do
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
+    from_email = System.get_env("MAILER_FROM_EMAIL", "noreply@example.com")
+    from_name = System.get_env("MAILER_FROM_NAME", "Vibecheck")
+
     email =
       new()
       |> to(recipient)
-      |> from({"Slopcase", "contact@example.com"})
+      |> from({from_name, from_email})
       |> subject(subject)
       |> text_body(body)
 
