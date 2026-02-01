@@ -1,5 +1,6 @@
 # 🎰 Slopcase
 
+[![CI](https://github.com/yourusername/slopcase/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/slopcase/actions/workflows/ci.yml)
 [![Elixir](https://img.shields.io/badge/Elixir-~%3E%201.15-4B275F?logo=elixir&logoColor=white)](https://elixir-lang.org/)
 [![Phoenix](https://img.shields.io/badge/Phoenix-~%3E%201.8-FD4F00?logo=phoenixframework&logoColor=white)](https://www.phoenixframework.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
