@@ -25,7 +25,7 @@
       {assigns[:page_title]}
     </.live_title>
     <style>
-      {app_css()}
+      <%= raw(app_css()) %>
     </style>
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
