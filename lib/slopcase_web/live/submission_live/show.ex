@@ -46,7 +46,9 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
       |> Enum.filter(& &1)
       |> Enum.join(" ")
 
-    if details != "", do: "#{base} #{details}. Vote: slop or valid?", else: "#{base}. Vote: slop or valid?"
+    if details != "",
+      do: "#{base} #{details}. Vote: slop or valid?",
+      else: "#{base}. Vote: slop or valid?"
   end
 
   @impl true
@@ -104,7 +106,10 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
               src={@submission.thumbnail_url}
               alt={"Screenshot of #{@submission.title}"}
             />
-            <div :if={!@submission.thumbnail_url} class="submission-card__placeholder submission-card__placeholder--large">
+            <div
+              :if={!@submission.thumbnail_url}
+              class="submission-card__placeholder submission-card__placeholder--large"
+            >
               <.icon name="hero-photo" class="w-12 h-12" />
             </div>
           </div>
@@ -189,7 +194,12 @@ defmodule SlopcaseWeb.SubmissionLive.Show do
   defp share_button(%{platform: "twitter"} = assigns) do
     text = "Check out \"#{assigns.submission.title}\" on Vibecheck – is it slop or valid? 🎰"
 
-    assigns = assign(assigns, :share_url, "https://twitter.com/intent/tweet?text=#{URI.encode(text)}&url=")
+    assigns =
+      assign(
+        assigns,
+        :share_url,
+        "https://twitter.com/intent/tweet?text=#{URI.encode(text)}&url="
+      )
 
     ~H"""
     <a

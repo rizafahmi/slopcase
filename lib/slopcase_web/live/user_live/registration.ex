@@ -12,7 +12,6 @@ defmodule SlopcaseWeb.UserLive.Registration do
         <div class="auth-card">
           <header class="auth-header">
             <h1 class="auth-title">Create an account</h1>
-
           </header>
 
           <.form

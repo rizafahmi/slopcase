@@ -9,7 +9,6 @@ defmodule SlopcaseWeb.UserLive.RegistrationTest do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
 
       assert html =~ "Create an account"
-
     end
 
     test "redirects if already logged in", %{conn: conn} do
@@ -65,6 +64,4 @@ defmodule SlopcaseWeb.UserLive.RegistrationTest do
       assert result =~ "has already been taken"
     end
   end
-
-
 end

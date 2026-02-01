@@ -28,10 +28,11 @@ defmodule SlopcaseWeb.ShowcaseLive do
         "127.0.0.1"
       end
 
-    {first_id, lcp_image} = case submissions do
-      [first | _] -> {first.id, first.thumbnail_url}
-      [] -> {nil, nil}
-    end
+    {first_id, lcp_image} =
+      case submissions do
+        [first | _] -> {first.id, first.thumbnail_url}
+        [] -> {nil, nil}
+      end
 
     {:ok,
      socket
@@ -63,10 +64,10 @@ defmodule SlopcaseWeb.ShowcaseLive do
   def handle_event("save", %{"submission" => submission_params}, socket) do
     case Showcase.create_submission(submission_params) do
       {:ok, submission} ->
-         {:noreply,
-          socket
-          |> stream_insert(:submissions, submission, at: 0)
-          |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
+        {:noreply,
+         socket
+         |> stream_insert(:submissions, submission, at: 0)
+         |> assign(:form, to_form(Showcase.change_submission(%Submission{})))
          |> push_event("js-exec", %{to: "#submission-modal", attr: "phx-remove"})
          |> put_flash(:info, "Submitted! The vibes are immaculate.")}
 
@@ -127,7 +128,11 @@ defmodule SlopcaseWeb.ShowcaseLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <.submissions_list streams={@streams} has_more?={@has_more?} first_submission_id={@first_submission_id} />
+      <.submissions_list
+        streams={@streams}
+        has_more?={@has_more?}
+        first_submission_id={@first_submission_id}
+      />
       <:modal>
         <.submission_modal form={@form} />
       </:modal>

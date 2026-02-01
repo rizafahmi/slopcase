@@ -1,5 +1,6 @@
 defmodule Slopcase.ShowcaseTest.Performance do
-  use Slopcase.DataCase, async: false # Async false for SQLite
+  # Async false for SQLite
+  use Slopcase.DataCase, async: false
 
   alias Slopcase.Showcase
 
@@ -10,7 +11,8 @@ defmodule Slopcase.ShowcaseTest.Performance do
       repo_url: "https://github.com/user/project",
       model: "GPT-4",
       tools: "Cursor",
-      slug: "super-slop" # Provide slug or rely on generation
+      # Provide slug or rely on generation
+      slug: "super-slop"
     }
 
     test "list_submissions/1 paginates and counts votes correctly" do

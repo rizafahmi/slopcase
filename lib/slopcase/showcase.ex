@@ -109,9 +109,10 @@ defmodule Slopcase.Showcase do
     Submission
     |> join(:left, [s], v in SubmissionVote, on: s.id == v.submission_id)
     |> group_by([s], s.id)
-    |> select([s, v], %{s |
-      slop_count: filter(count(v.id), v.verdict == true),
-      not_slop_count: filter(count(v.id), v.verdict == false)
+    |> select([s, v], %{
+      s
+      | slop_count: filter(count(v.id), v.verdict == true),
+        not_slop_count: filter(count(v.id), v.verdict == false)
     })
   end
 

@@ -75,8 +75,6 @@ defmodule SlopcaseWeb.UserLive.LoginTest do
     end
   end
 
-
-
   describe "re-authentication (sudo mode)" do
     setup %{conn: conn} do
       user = user_fixture()
