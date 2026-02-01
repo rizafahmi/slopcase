@@ -28,12 +28,18 @@ defmodule SlopcaseWeb.ShowcaseLive do
         "127.0.0.1"
       end
 
+    first_id = case submissions do
+      [first | _] -> first.id
+      [] -> nil
+    end
+
     {:ok,
      socket
      |> assign(:page_title, "Vibecheck")
      |> assign(:form, form)
      |> assign(:voter_ip, voter_ip)
      |> assign(:page, 1)
+     |> assign(:first_submission_id, first_id)
      # We need to track if we have more submissions to load.
      # A simple heuristic check: if we got exactly the limit (20), assume more exist.
      |> assign(:has_more?, length(submissions) == 20)
@@ -120,7 +126,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <.submissions_list streams={@streams} has_more?={@has_more?} />
+      <.submissions_list streams={@streams} has_more?={@has_more?} first_submission_id={@first_submission_id} />
       <:modal>
         <.submission_modal form={@form} />
       </:modal>
@@ -190,6 +196,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
           :for={{id, submission} <- @streams.submissions}
           id={id}
           submission={submission}
+          priority={submission.id == @first_submission_id}
         />
       </div>
 
@@ -200,12 +207,22 @@ defmodule SlopcaseWeb.ShowcaseLive do
     """
   end
 
+  attr :id, :string, required: true
+  attr :submission, :map, required: true
+  attr :priority, :boolean, default: false
+
   defp submission_card(assigns) do
     ~H"""
     <div id={@id} class="submission-card">
       <div class="submission-card__thumbnail">
         <img
-          :if={@submission.thumbnail_url}
+          :if={@submission.thumbnail_url && @priority}
+          src={@submission.thumbnail_url}
+          alt={"Screenshot of #{@submission.title}"}
+          fetchpriority="high"
+        />
+        <img
+          :if={@submission.thumbnail_url && !@priority}
           src={@submission.thumbnail_url}
           alt={"Screenshot of #{@submission.title}"}
           loading="lazy"
