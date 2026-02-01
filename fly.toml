@@ -4,7 +4,7 @@ primary_region = "lhr"
 [build]
 
 [env]
-  PHX_HOST = "slopcase-1769848144.fly.dev"
+  PHX_HOST = "vibecheck.rizafahmi.com"
   PORT = "8080"
   DATABASE_PATH = "/data/slopcase.db"
 
