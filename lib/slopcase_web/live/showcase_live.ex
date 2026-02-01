@@ -219,13 +219,19 @@ defmodule SlopcaseWeb.ShowcaseLive do
           :if={@submission.thumbnail_url && @priority}
           src={@submission.thumbnail_url}
           alt={"Screenshot of #{@submission.title}"}
+          width="480"
+          height="252"
           fetchpriority="high"
+          decoding="async"
         />
         <img
           :if={@submission.thumbnail_url && !@priority}
           src={@submission.thumbnail_url}
           alt={"Screenshot of #{@submission.title}"}
+          width="480"
+          height="252"
           loading="lazy"
+          decoding="async"
         />
         <div :if={!@submission.thumbnail_url} class="submission-card__placeholder">
           <.icon name="hero-photo" class="w-8 h-8" />
