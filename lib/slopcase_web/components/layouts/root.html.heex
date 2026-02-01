@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
     <link rel="preconnect" href="https://opengraph.githubassets.com" crossorigin />
+    <link :if={assigns[:lcp_image_url]} rel="preload" as="image" href={assigns[:lcp_image_url]} fetchpriority="high" />
 
     <%!-- SEO Meta Tags --%>
     <meta name="description" content={assigns[:meta_description] || "A showcase for AI-generated projects. Submit your AI-built apps and let the community vote: miss or hit?"} />

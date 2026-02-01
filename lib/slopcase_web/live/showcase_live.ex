@@ -28,9 +28,9 @@ defmodule SlopcaseWeb.ShowcaseLive do
         "127.0.0.1"
       end
 
-    first_id = case submissions do
-      [first | _] -> first.id
-      [] -> nil
+    {first_id, lcp_image} = case submissions do
+      [first | _] -> {first.id, first.thumbnail_url}
+      [] -> {nil, nil}
     end
 
     {:ok,
@@ -40,6 +40,7 @@ defmodule SlopcaseWeb.ShowcaseLive do
      |> assign(:voter_ip, voter_ip)
      |> assign(:page, 1)
      |> assign(:first_submission_id, first_id)
+     |> assign(:lcp_image_url, lcp_image)
      # We need to track if we have more submissions to load.
      # A simple heuristic check: if we got exactly the limit (20), assume more exist.
      |> assign(:has_more?, length(submissions) == 20)
