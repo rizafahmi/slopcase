@@ -23,7 +23,7 @@ defmodule SlopcaseWeb.SubmissionLive.ShowTest do
     end
 
     test "renders submission details", %{conn: conn, submission: submission} do
-      {:ok, _live, html} = live(conn, ~p"/p/#{submission.id}")
+      {:ok, _live, html} = live(conn, ~p"/p/#{submission.slug}")
 
       assert html =~ "Test Submission"
       assert html =~ "Claude 3.5"
@@ -36,7 +36,7 @@ defmodule SlopcaseWeb.SubmissionLive.ShowTest do
     end
 
     test "allows voting on submission", %{conn: conn, submission: submission} do
-      {:ok, live, _html} = live(conn, ~p"/p/#{submission.id}")
+      {:ok, live, _html} = live(conn, ~p"/p/#{submission.slug}")
 
       # Initially vote counts should be 0
       assert has_element?(live, ".vote-count", "0")
@@ -54,18 +54,18 @@ defmodule SlopcaseWeb.SubmissionLive.ShowTest do
     end
 
     test "sets correct page title and meta tags", %{conn: conn, submission: submission} do
-      {:ok, _live, html} = live(conn, ~p"/p/#{submission.id}")
+      {:ok, _live, html} = live(conn, ~p"/p/#{submission.slug}")
 
       assert html =~ "Test Submission"
     end
 
     test "redirects to home for non-existent submission", %{conn: conn} do
       assert {:error, {:redirect, %{to: "/", flash: %{"error" => "Submission not found"}}}} =
-               live(conn, ~p"/p/99999")
+               live(conn, ~p"/p/non-existent-slug")
     end
 
     test "has share buttons", %{conn: conn, submission: submission} do
-      {:ok, live, _html} = live(conn, ~p"/p/#{submission.id}")
+      {:ok, live, _html} = live(conn, ~p"/p/#{submission.slug}")
 
       assert has_element?(live, ".share-btn--twitter")
       assert has_element?(live, ".share-btn--copy")
